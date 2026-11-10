@@ -100,7 +100,7 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
     con = get_connection()
     register_vector(con)
     transformer_model = SentenceTransformer(model)
-    stopper = False
+    
 
     try:
         for row in df_in_list:
@@ -152,8 +152,9 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
             for ref_id, reference_title, distance in reference_rows:
                 print(f"ID: {ref_id}, Title: {reference_title}, Distance: {distance:.4f}")
 
-            prompt = f"""Choose the most appropriate canonical job title for the following job title: '{title}' from these options: {', '.join([row[1] for row in reference_rows])}. return 
-            only the canonical job title without any additional text or explanation."""
+            prompt = f"""Choose the most appropriate canonical job title for the following job title: '{title}' from these options: {', '.join([row[1] for row in reference_rows])}. 
+            The description of the job is: '{description}'.
+            return only the canonical job title without any additional text or explanation. The canonical job title should be one of the options provided. If none of the options are appropriate, return 'No suitable title found'."""
             harmonized_title = ask_ollama(prompt)
             print(f"Harmonized title from Ollama: {harmonized_title}")
 
@@ -173,6 +174,7 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
 
                 embedding_vector = Vector(phrase_embedding.tolist())
 
+                
                 with con.cursor() as cur:
                     cur.execute(
                     """

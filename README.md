@@ -57,14 +57,16 @@ the right answer. In cases where there were some ambiguity I also reviewed the r
 
 ### Results
 
-This is developing process. I am currently trying to enhance the LLM models ability to 
+This is developing process. I am currently trying to enhance the LLM models ability to pick the right one of the relevant titles.
 
 #### 1. Without giving description to the LLM
 
 Without giving description to the LLM 65/100 titles could be said to be harmonized in a right way. I am quite sure that this can be improved by giving job posting description to the LLM with the vector calculated titles. The prompt itself can also be improved most likely.
 
+#### 2. Raw description given to the LLM with the vector calculated titles
 
-
+After these changes LLM actually performed worse. There were more hallucinations for the harmonised titles. Also the picking
+of the harmonised title took much longer. Overall the performance was after manual review 53/100
 
 
 

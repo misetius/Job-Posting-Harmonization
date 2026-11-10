@@ -5,3 +5,6 @@ jaffle_shop
 images
 harmonized_jobs.csv
 logs
+review1*
+deleted.py
+__pycache__/*
