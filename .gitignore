@@ -7,4 +7,4 @@ harmonized_jobs.csv
 logs
 review1*
 deleted.py
-__pycache__/*
+scripts/__pycache__/*

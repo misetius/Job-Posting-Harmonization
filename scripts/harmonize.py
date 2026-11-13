@@ -1,3 +1,4 @@
+import csv
 import re
 from pgvector.psycopg2 import register_vector
 from pathlib import Path
@@ -135,7 +136,7 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
                 WHERE item_type = 'title'
                   AND model_name = %s
                 ORDER BY embedding <=> %s
-                LIMIT 5
+                LIMIT 10
                 """,
                 (
                     embedding_vector,
@@ -152,9 +153,9 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
             for ref_id, reference_title, distance in reference_rows:
                 print(f"ID: {ref_id}, Title: {reference_title}, Distance: {distance:.4f}")
 
-            prompt = f"""Choose the most appropriate canonical job title for the following job title: '{title}' from these options: {', '.join([row[1] for row in reference_rows])}. 
+            prompt = f"""Choose the most appropriate canonical job title for the following job title: '{title}' from these options: {', '.join([row[1] for row in reference_rows])}. Do not make up any titles or use the raw title. 
             The description of the job is: '{description}'.
-            return only the canonical job title without any additional text or explanation. The canonical job title should be one of the options provided. If none of the options are appropriate, return 'No suitable title found'."""
+            return only the chosen job title without any additional text or explanation. The canonical job title should be one of the options provided. If none of the options are appropriate, return 'No suitable title found'."""
             harmonized_title = ask_ollama(prompt)
             print(f"Harmonized title from Ollama: {harmonized_title}")
 
@@ -164,60 +165,26 @@ def harmonize_reference_data(input_path: Path, description_column: str, title_co
             harmonised_skills = set()
 
             for phrase in words:
+
+                print(f"Processing phrase: '{phrase}'")
+        
                 if not isinstance(phrase, str) or not phrase.strip():
                     continue
 
-                phrase_embedding = transformer_model.encode(
-                phrase.strip(),
-                normalize_embeddings=True,
-                )
 
-                embedding_vector = Vector(phrase_embedding.tolist())
+                skill_rows = csv.reader(open("data/processed/skills_cleaned.csv", "r"))
 
+                skill_rows_to_list = list(skill_rows)
+
+                skills_lower = [row[0].lower() for row in skill_rows_to_list]
+
+                if phrase.lower() in skills_lower:
+                    print(f"Found exact match for skill: '{phrase}'")
+                    harmonised_skills.add(phrase)
+                    continue
+            
                 
-                with con.cursor() as cur:
-                    cur.execute(
-                    """
-                    SELECT
-                        id,
-                        text,
-                        embedding <=> %s AS distance
-                    FROM reference_embeddings
-                    WHERE item_type = 'skill'
-                      AND model_name = %s
-                    ORDER BY embedding <=> %s
-                    LIMIT 1
-                    """,
-                    (
-                        embedding_vector,
-                        model,
-                        embedding_vector,
-                    ),
-                )
-
-                    reference_rows = cur.fetchall()
-
-                if reference_rows:
-                    ref_id, reference_skill, distance = reference_rows[0]
-
-                    if distance < DISTANCE_THRESHOLD:
-                        harmonised_skills.add(reference_skill)
-
-                    print(
-                        f"Harmonized skill: {reference_skill} "
-                        f"for {title} (distance: {distance:.4f})"
-                    )
-                else:
-                    print(
-                        f"No harmonized skill found for phrase "
-                        f"'{phrase}' (distance: {distance:.4f})"
-                    )
-
-            print(
-                f"Harmonized skills for {title} the harmonized title is {harmonized_title}: "
-            f"{sorted(harmonised_skills)}"
-            )
-
+                
             with con.cursor() as cur:
                 cur.execute(
                     """

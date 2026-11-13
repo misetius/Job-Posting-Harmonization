@@ -68,6 +68,9 @@ Without giving description to the LLM 65/100 titles could be said to be harmoniz
 After these changes LLM actually performed worse. There were more hallucinations for the harmonised titles. Also the picking
 of the harmonised title took much longer. Overall the performance was after manual review 53/100
 
+#### 3. Refining the prompt and giving the LLM more titles from pgvector and using only matching for the skills
+
+After refining the prompt where it was emphasised that the harmonised title should be chosen from the options from pgvector database and giving overall more options the results were lot better. After manual review the result was 81/100. 
 
 
 ## Project Scripts
